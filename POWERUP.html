@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha Power-Up! - Modelo Vazio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@400;600;700&family=Jura:wght@400;700&display=swap');
+
+        body {
+            background-color: #e5e7eb;
+            color: #000000;
+            font-family: 'Jura', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden; 
+        }
+
+        h1, h2, h3, .title-font {
+            font-family: 'Teko', sans-serif;
+            letter-spacing: 0.05em;
+        }
+
+        /* Formas Geométricas com Clip-Path */
+        .chamfer-box {
+            background: #000;
+            padding: 4px;
+            clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px);
+        }
+        
+        .chamfer-inner {
+            background: #fff;
+            height: 100%;
+            width: 100%;
+            padding: 0.5rem;
+            clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+        }
+
+        .hex-outer {
+            background: #000;
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .hex-inner {
+            background: #fff;
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        /* Hexágonos de Atributos com Borda Dupla */
+        .hex-attr-outer {
+            width: 52px; height: 52px;
+            background: #000;
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            display: flex; align-items: center; justify-content: center;
+            padding: 2px;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+        .hex-attr-mid {
+            width: 100%; height: 100%;
+            background: #fff;
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            display: flex; align-items: center; justify-content: center;
+            padding: 2px;
+        }
+        .hex-attr-inner {
+            width: 100%; height: 100%;
+            background: #fff;
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        /* Checkboxes customizados para o Stress */
+        .stress-hex {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background-color: #fff;
+            position: relative;
+            cursor: pointer;
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            border: none;
+            margin: 1px;
+        }
+        .stress-hex-border {
+            width: 22px;
+            height: 22px;
+            background-color: #000;
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            display: inline-flex; align-items: center; justify-content: center;
+            margin: 2px;
+        }
+        .stress-hex:checked { background-color: #000; }
+        .stress-hex:disabled { background-color: #f0f0f0; cursor: not-allowed; }
+
+        .label-text {
+            font-size: 0.70rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            white-space: nowrap;
+        }
+        
+        .val-text {
+            font-size: 1.25rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        /* Campos mutáveis */
+        [contenteditable="true"] {
+            outline: none;
+            transition: background-color 0.2s;
+            border-radius: 2px;
+            padding: 2px 4px;
+            cursor: text;
+            min-height: 1.5em; /* Previne colapso total */
+        }
+        [contenteditable="true"]:hover { background-color: #e5e7eb; }
+        [contenteditable="true"]:focus { background-color: #d1d5db; }
+        [contenteditable="true"]:empty:before {
+            content: "\00a0"; /* Espaço invisível se vazio */
+        }
+
+        /* Botões de + e - */
+        .btn-math {
+            color: #9ca3af;
+            transition: all 0.2s;
+            cursor: pointer;
+            padding: 2px 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            outline: none;
+        }
+        .btn-math:hover { color: #000; transform: scale(1.3); }
+        .btn-math:active { transform: scale(0.9); }
+
+        /* Animação Visual de Erro (Piscar Vermelho) */
+        .flash-error {
+            background-color: #dc2626 !important;
+            transform: scale(1.15);
+        }
+
+        /* Checkbox Especial */
+        .special-check { appearance: none; display: none; }
+        .special-check:checked + .hex-inner { background-color: #000; color: #fff; }
+        .special-check:not(:checked) + .hex-inner { background-color: #fff; color: #000; }
+
+        /* Animações e Estilos dos Dados Rolando */
+        .dice-badge { z-index: 20; }
+        
+        @keyframes dice-drop {
+            0% { transform: translateY(-100px) rotate(180deg) scale(0.5); opacity: 0; }
+            70% { transform: translateY(10px) rotate(-10deg) scale(1.1); opacity: 1; }
+            100% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+        }
+
+        @media (min-width: 1280px) {
+            #power-up-txt {
+                writing-mode: vertical-rl;
+                text-orientation: mixed;
+            }
+        }
+
+        /* Grid de Inventário Editável */
+        .inv-grid-cell {
+            min-height: 0 !important;
+            padding: 1px !important;
+            border-radius: 0 !important;
+            font-size: 9px;
+            font-weight: bold;
+            line-height: 1.1;
+            overflow: hidden;
+            word-break: break-all;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: text;
+            transition: all 0.2s ease;
+        }
+        .inv-grid-cell:empty:before { content: none !important; }
+        .inv-grid-cell:hover { background-color: #d1d5db !important; }
+        .inv-grid-cell:focus {
+            background-color: #9ca3af !important;
+            color: #000;
+            outline: 2px solid #000;
+            z-index: 10;
+        }
+        .inv-grid-cell:not(:empty) {
+            background-color: #374151 !important;
+            color: #fff;
+            border-style: solid;
+            border-color: #111827;
+            box-shadow: inset 0 0 4px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body class="p-2 md:p-4 flex justify-center bg-gray-200" onload="initSheet()">
+
+<!-- Container Principal Responsivo -->
+<div class="w-full max-w-[1280px] bg-white border-4 border-black p-3 md:p-4 flex flex-col xl:flex-row gap-6 shadow-2xl relative mx-auto">
+
+    <!-- BARRA LATERAL ESQUERDA: ESPECIAL -->
+    <div class="w-full xl:w-[84px] shrink-0 flex flex-col">
+        <div class="chamfer-box w-full flex flex-col xl:min-h-[800px]">
+            <div class="chamfer-inner flex flex-col py-4 px-1 flex-1 items-center justify-start bg-white">
+                
+                <div class="hidden xl:flex items-center justify-center h-48 w-full shrink-0 mb-4">
+                    <span class="title-font text-4xl font-bold uppercase tracking-widest -rotate-90 whitespace-nowrap text-black">POWER-UP</span>
+                </div>
+                <div class="xl:hidden w-full text-center title-font text-4xl font-bold uppercase tracking-widest mb-4">
+                    POWER-UP
+                </div>
+
+                <div class="flex flex-row flex-wrap xl:flex-col items-center justify-center gap-[2px] xl:gap-[4px] w-full">
+                    <script>
+                        for(let i=1; i<=30; i++) {
+                            let isChecked = i <= 5 ? 'checked' : '';
+                            let label = '';
+                            
+                            if(i === 10) label = '<div class="text-[8px] font-black leading-none text-center mt-1">ULTIMATE</div>';
+                            if(i === 20) label = '<div class="text-[8px] font-black leading-none text-center mt-1">MEGA<br>ULTIMATE</div>';
+                            if(i === 30) label = '<div class="text-[8px] font-black leading-none text-center mt-1">ULTRA<br>ULTIMATE</div>';
+                            
+                            let mb = (i===10 || i===20 || i===30) ? 'mb-2 xl:mb-4' : ''; 
+                            
+                            document.write(`
+                            <div class="flex flex-col items-center justify-center shrink-0 ${mb} mx-[1px] xl:mx-0">
+                                <label class="w-6 h-6 hex-outer bg-black cursor-pointer z-20">
+                                    <input type="checkbox" class="special-check" id="special-chk-${i}">
+                                    <div class="w-[20px] h-[20px] hex-inner text-[10px] font-bold transition-colors">${i}</div>
+                                </label>
+                                ${label}
+                            </div>
+                            `);
+                        }
+                    </script>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ÁREA CENTRAL DE CONTEÚDO -->
+    <div class="flex-1 flex flex-col gap-4 overflow-hidden w-full">
+        
+        <!-- ================== LINHA 1: TOPO ================== -->
+        <div class="flex flex-col lg:flex-row gap-4 w-full">
+            
+            <div class="flex flex-1 flex-col sm:flex-row gap-4 w-full">
+                <!-- Portrait Dinâmico com Upload -->
+                <label class="chamfer-box w-full sm:w-40 h-40 shrink-0 cursor-pointer group relative block" title="Clique para enviar uma imagem do dispositivo">
+                    <div class="chamfer-inner flex items-center justify-center bg-gray-100 overflow-hidden text-center text-xs text-gray-400 font-bold p-0 relative">
+                        <span id="portrait-text" class="group-hover:text-black transition-colors z-10"><i class="fa-solid fa-camera text-2xl mb-1 block"></i> Inserir Imagem</span>
+                        <img id="portrait-img" class="absolute inset-0 w-full h-full object-cover hidden z-0" src="" alt="Portrait">
+                    </div>
+                    <input type="file" id="portrait-upload" accept="image/*" class="hidden">
+                </label>
+
+                <!-- Informações (Nome, Conceito, Descrição) -->
+                <div class="flex-1 flex flex-col gap-2 w-full">
+                    <div class="chamfer-box w-full">
+                        <div class="chamfer-inner flex flex-col sm:flex-row items-start sm:items-center px-2 py-1">
+                            <span class="label-text w-20 shrink-0 sm:border-r-2 sm:border-black mr-2">NOME</span>
+                            <span class="font-bold text-lg w-full" contenteditable="true" id="edit-nome"></span>
+                        </div>
+                    </div>
+                    <div class="chamfer-box w-full">
+                        <div class="chamfer-inner flex flex-col sm:flex-row items-start sm:items-center px-2 py-1">
+                            <span class="label-text w-20 shrink-0 sm:border-r-2 sm:border-black mr-2">CONCEITO</span>
+                            <span class="font-bold w-full" contenteditable="true" id="edit-conceito"></span>
+                        </div>
+                    </div>
+                    <div class="chamfer-box w-full flex-1">
+                        <div class="chamfer-inner flex flex-col px-2 py-1 h-full">
+                            <span class="label-text border-b-2 border-black mb-1">DESCRIÇÃO</span>
+                            <span class="text-sm font-semibold w-full leading-tight flex-1" contenteditable="true" id="edit-desc"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+                <!-- NH e PVS com Botões (Sem edição manual de texto) -->
+                <div class="w-full sm:w-20 flex flex-row sm:flex-col items-center justify-around sm:justify-between shrink-0 bg-white border-2 border-black p-2 sm:p-0 sm:border-0 rounded sm:rounded-none">
+                    <div class="flex flex-col items-center">
+                        <div class="flex items-center gap-1">
+                            <button onclick="changeVal('edit-nh', -1)" class="btn-math"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                            <div class="w-10 h-10 hex-outer"><div class="w-8 h-8 hex-inner val-text stat-val" id="edit-nh">0</div></div>
+                            <button onclick="changeVal('edit-nh', 1)" class="btn-math"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                        </div>
+                        <span class="label-text mt-1">NH</span>
+                    </div>
+                    <div class="flex flex-col items-center mt-0 sm:mt-2">
+                        <div class="flex items-center gap-1">
+                            <button onclick="changeVal('edit-pvs-acum', -1)" class="btn-math"><i class="fa-solid fa-minus text-[8px]"></i></button>
+                            <div class="w-8 h-8 hex-outer"><div class="w-6 h-6 hex-inner val-text text-sm stat-val" id="edit-pvs-acum">0</div></div>
+                            <button onclick="changeVal('edit-pvs-acum', 1)" class="btn-math"><i class="fa-solid fa-plus text-[8px]"></i></button>
+                        </div>
+                        <span class="label-text text-[8px] text-center leading-tight mt-1">PVS<br>ACUMULADOS</span>
+                    </div>
+                    <div class="flex flex-col items-center mt-0 sm:mt-2">
+                        <div class="flex items-center gap-1">
+                            <button onclick="changeVal('edit-pvs-gasto', -1)" class="btn-math"><i class="fa-solid fa-minus text-[8px]"></i></button>
+                            <div class="w-8 h-8 hex-outer"><div class="w-6 h-6 hex-inner val-text text-sm stat-val" id="edit-pvs-gasto">0</div></div>
+                            <button onclick="changeVal('edit-pvs-gasto', 1)" class="btn-math"><i class="fa-solid fa-plus text-[8px]"></i></button>
+                        </div>
+                        <span class="label-text text-[8px] text-center leading-tight mt-1">PVS<br>PARA GASTAR</span>
+                    </div>
+                </div>
+
+                <!-- Ataques e Skills Principais -->
+                <div class="flex-1 flex flex-col gap-2 justify-between min-w-0">
+                    <!-- Ataque Básico -->
+                    <div class="chamfer-box w-full flex-1">
+                        <div class="chamfer-inner flex items-center justify-between px-3 h-full">
+                            <div class="flex flex-col flex-1 justify-center min-w-0 pr-2">
+                                <span class="label-text font-bold text-[10px] truncate">Ataque Básico <span class="font-normal normal-case">(Corpo+Combate+Sorte)</span>:</span>
+                                <span class="text-sm font-bold border-b border-gray-300 mt-1 truncate block w-full" contenteditable="true" id="edit-atk-basico"></span>
+                            </div>
+                            <div class="w-10 h-10 hex-outer bg-black dice-badge group shrink-0 cursor-pointer" onclick="triggerRoll(this)" title="Rolar Dados!">
+                                <div class="w-[36px] h-[36px] hex-inner bg-white flex flex-col items-center justify-center transition-colors group-hover:bg-gray-200">
+                                    <i class="fa-solid fa-dice text-black text-sm mb-[1px] group-hover:text-red-600 transition-transform"></i>
+                                    <span class="font-black text-[9px] leading-none stat-val" contenteditable="true" onclick="event.stopPropagation()">1d6</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Ofensiva -->
+                    <div class="chamfer-box w-full flex-1">
+                        <div class="chamfer-inner flex items-center justify-between px-3 h-full">
+                            <div class="flex flex-col flex-1 justify-center min-w-0 pr-2">
+                                <span class="label-text font-bold text-[10px] truncate">Ofensiva <span class="font-normal normal-case">(Corpo+Combate+Sorte+Arcana)</span>:</span>
+                                <span class="text-sm font-bold border-b border-gray-300 mt-1 truncate block w-full" contenteditable="true" id="edit-atk-ofensiva"></span>
+                            </div>
+                            <div class="w-10 h-10 hex-outer bg-black dice-badge group shrink-0 cursor-pointer" onclick="triggerRoll(this)" title="Rolar Dados!">
+                                <div class="w-[36px] h-[36px] hex-inner bg-white flex flex-col items-center justify-center transition-colors group-hover:bg-gray-200">
+                                    <i class="fa-solid fa-dice text-black text-sm mb-[1px] group-hover:text-red-600 transition-transform"></i>
+                                    <span class="font-black text-[9px] leading-none stat-val" contenteditable="true" onclick="event.stopPropagation()">1d6</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Tática -->
+                    <div class="chamfer-box w-full flex-1">
+                        <div class="chamfer-inner flex items-center justify-between px-3 h-full">
+                            <div class="flex flex-col flex-1 justify-center min-w-0 pr-2">
+                                <span class="label-text font-bold text-[10px] truncate">Tática <span class="font-normal normal-case">(Mente+Foco+Sorte+Arcana)</span>:</span>
+                                <span class="text-sm font-bold border-b border-gray-300 mt-1 truncate block w-full" contenteditable="true" id="edit-atk-tatica"></span>
+                            </div>
+                            <div class="w-10 h-10 hex-outer bg-black dice-badge group shrink-0 cursor-pointer" onclick="triggerRoll(this)" title="Rolar Dados!">
+                                <div class="w-[36px] h-[36px] hex-inner bg-white flex flex-col items-center justify-center transition-colors group-hover:bg-gray-200">
+                                    <i class="fa-solid fa-dice text-black text-sm mb-[1px] group-hover:text-red-600 transition-transform"></i>
+                                    <span class="font-black text-[9px] leading-none stat-val" contenteditable="true" onclick="event.stopPropagation()">1d6</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================== LINHA 2: MEIO ================== -->
+        <div class="w-full pb-4">
+            <div class="flex flex-col xl:flex-row gap-6 mt-4 w-full">
+                
+                <!-- Árvore de Atributos (COM VALIDAÇÃO) -->
+                <!-- A edição livre de texto foi removida destas caixas (stat-val) para forçar o uso dos botões e respeitar as regras matemáticas -->
+                <div class="w-full xl:w-[500px] shrink-0 flex flex-col justify-between gap-6 py-2">
+                    
+                    <!-- ALMA ROW -->
+                    <div class="flex items-center w-full mt-2 sm:mt-4 group-container">
+                        <div class="flex flex-col items-center justify-center z-10 bg-white relative shrink-0 px-1">
+                            <span class="label-text absolute -top-5">ALMA</span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="changeVal('val-alma', -1)" class="btn-math"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                                <div class="hex-attr-outer w-[52px] h-[52px]" id="box-alma"><div class="hex-attr-mid bg-black"><div class="hex-attr-inner val-text stat-val" id="val-alma">0</div></div></div>
+                                <button onclick="changeVal('val-alma', 1)" class="btn-math"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex-1 h-[4px] bg-black z-0 -mx-1 min-w-[5px]"></div>
+                        <div class="flex flex-col items-center bg-white px-1 z-10 relative shrink-0">
+                            <span class="label-text absolute -top-5">ARCANA</span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="changeVal('val-arcana', -1)" class="btn-math"><i class="fa-solid fa-minus text-[8px]"></i></button>
+                                <div class="hex-attr-outer w-[44px] h-[44px]"><div class="hex-attr-mid bg-black"><div class="hex-attr-inner text-lg font-bold stat-val" id="val-arcana">0</div></div></div>
+                                <button onclick="changeVal('val-arcana', 1)" class="btn-math"><i class="fa-solid fa-plus text-[8px]"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex-1 h-[4px] bg-black z-0 -mx-1 min-w-[5px]"></div>
+                        <div class="flex flex-col items-center bg-white px-1 z-10 relative shrink-0">
+                            <span class="label-text absolute -top-5">SORTE</span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="changeVal('val-sorte', -1)" class="btn-math"><i class="fa-solid fa-minus text-[8px]"></i></button>
+                                <div class="hex-attr-outer w-[44px] h-[44px]"><div class="hex-attr-mid bg-black"><div class="hex-attr-inner text-lg font-bold stat-val" id="val-sorte">0</div></div></div>
+                                <button onclick="changeVal('val-sorte', 1)" class="btn-math"><i class="fa-solid fa-plus text-[8px]"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex-1 h-[4px] bg-black z-0 -mx-1 min-w-[5px]"></div>
+                        <div class="flex flex-col items-center bg-white px-1 z-10 relative shrink-0">
+                            <span class="label-text absolute -top-5">VONTADE</span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="changeVal('val-vontade', -1)" class="btn-math"><i class="fa-solid fa-minus text-[8px]"></i></button>
+                                <div class="hex-attr-outer w-[44px] h-[44px]"><div class="hex-attr-mid bg-black"><div class="hex-attr-inner text-lg font-bold stat-val" id="val-vontade">0</div></div></div>
+                                <button onclick="changeVal('val-vontade', 1)" class="btn-math"><i class="fa-solid fa-plus text-[8px]"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CORPO ROW -->
+                    <div class="flex items-center w-full mt-2 sm:mt-4 group-container">
+                        <div class="flex flex-col items-center justify-center z-10 bg-white relative shrink-0 px-1">
+                            <span class="label-text absolute -top-5">CORPO</span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="changeVal('val-corpo', -1)" class="btn-math"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                                <div class="hex-attr-outer w-[52px] h-[52px]" id="box-corpo"><div class="hex-attr-mid bg-black"><div class="hex-attr-inner val-text stat-val" id="val-corpo">0</div></div></div>
+                                <button onclick="changeVal('val-corpo', 1)" class="btn-math"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex-1 h-[4px] bg-black z-0 -mx-1 min-w-[5px]"></div>
+                        <div class="flex flex-col items-center bg-white px-1 z-10 relative shrink-0">
+                            <span class="label-text absolute -top-5">COMBATE</span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="changeVal('val-combate', -1)" class="btn-math"><i class="fa-solid fa-minus text-[8px]"></i></button>
+                                <div class="hex-attr-outer w-[44px] h-[44px]"><div class="hex-attr-mid bg-black"><div class="hex-attr-inner text-lg font-bold stat-val" id="val-combate">0</div></div></div>
+                                <button onclick="changeVal('val-combate', 1)" class="btn-math"><i class="fa-solid fa-plus text-[8px]"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex-1 h-[4px] bg-black z-0 -mx-1 min-w-[5px]"></div>
+                        <div class="flex flex-col items-center bg-white px-1 z-10 relative shrink-0">
+                            <span class="label-text absolute -top-5">COORD.</span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="changeVal('val-coordenacao', -1)" class="btn-math"><i class="fa-solid fa-minus text-[8px]"></i></button>
+                                <div class="hex-attr-outer w-[44px] h-[44px]"><div class="hex-attr-mid bg-black"><div class="hex-attr-inner text-lg font-bold stat-val" id="val-coordenacao">0</div></div></div>
+                                <button onclick="changeVal('val-coordenacao', 1)" class="btn-math"><i class="fa-solid fa-plus text-[8px]"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex-1 h-[4px] bg-black z-0 -mx-1 min-w-[5px]"></div>
+                        <div class="flex flex-col items-center bg-white px-1 z-10 relative shrink-0">
+                            <span class="label-text absolute -top-5">ESTAMINA</span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="changeVal('val-estamina', -1)" class="btn-math"><i class="fa-solid fa-minus text-[8px]"></i></button>
+                                <div class="hex-attr-outer w-[44px] h-[44px]"><div class="hex-attr-mid bg-black"><div class="hex-attr-inner text-lg font-bold stat-val" id="val-estamina">0</div></div></div>
+                                <button onclick="changeVal('val-estamina', 1)" class="btn-math"><i class="fa-solid fa-plus text-[8px]"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MENTE ROW -->
+                    <div class="flex items-center w-full mt-2 sm:mt-4 group-container">
+                        <div class="flex flex-col items-center justify-center z-10 bg-white relative shrink-0 px-1">
+                            <span class="label-text absolute -top-5">MENTE</span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="changeVal('val-mente', -1)" class="btn-math"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                                <div class="hex-attr-outer w-[52px] h-[52px]" id="box-mente"><div class="hex-attr-mid bg-black"><div class="hex-attr-inner val-text stat-val" id="val-mente">0</div></div></div>
+                                <button onclick="changeVal('val-mente', 1)" class="btn-math"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex-1 h-[4px] bg-black z-0 -mx-1 min-w-[5px]"></div>
+                        <div class="flex flex-col items-center bg-white px-1 z-10 relative shrink-0">
+                            <span class="label-text absolute -top-5">CARISMA</span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="changeVal('val-carisma', -1)" class="btn-math"><i class="fa-solid fa-minus text-[8px]"></i></button>
+                                <div class="hex-attr-outer w-[44px] h-[44px]"><div class="hex-attr-mid bg-black"><div class="hex-attr-inner text-lg font-bold stat-val" id="val-carisma">0</div></div></div>
+                                <button onclick="changeVal('val-carisma', 1)" class="btn-math"><i class="fa-solid fa-plus text-[8px]"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex-1 h-[4px] bg-black z-0 -mx-1 min-w-[5px]"></div>
+                        <div class="flex flex-col items-center bg-white px-1 z-10 relative shrink-0">
+                            <span class="label-text absolute -top-5">FOCO</span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="changeVal('val-foco', -1)" class="btn-math"><i class="fa-solid fa-minus text-[8px]"></i></button>
+                                <div class="hex-attr-outer w-[44px] h-[44px]"><div class="hex-attr-mid bg-black"><div class="hex-attr-inner text-lg font-bold stat-val" id="val-foco">0</div></div></div>
+                                <button onclick="changeVal('val-foco', 1)" class="btn-math"><i class="fa-solid fa-plus text-[8px]"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex-1 h-[4px] bg-black z-0 -mx-1 min-w-[5px]"></div>
+                        <div class="flex flex-col items-center bg-white px-1 z-10 relative shrink-0">
+                            <span class="label-text absolute -top-5">INTELECTO</span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="changeVal('val-intelecto', -1)" class="btn-math"><i class="fa-solid fa-minus text-[8px]"></i></button>
+                                <div class="hex-attr-outer w-[44px] h-[44px]"><div class="hex-attr-mid bg-black"><div class="hex-attr-inner text-lg font-bold stat-val" id="val-intelecto">0</div></div></div>
+                                <button onclick="changeVal('val-intelecto', 1)" class="btn-math"><i class="fa-solid fa-plus text-[8px]"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Iniciativa, Defesa, Resistência (Cálculos automáticos blindados) -->
+                <div class="w-full xl:w-48 shrink-0 flex flex-col sm:flex-row xl:flex-col items-center justify-around gap-6 pt-0 xl:pt-4">
+                    <!-- Iniciativa -->
+                    <div class="flex flex-col items-center">
+                        <div class="w-16 h-16 hex-outer" title="Calculado: Corpo + Coordenação + Vontade"><div class="w-[60px] h-[60px] hex-inner val-text text-3xl bg-yellow-100 stat-val" id="out-iniciativa">0</div></div>
+                        <span class="label-text mt-1 border-b-2 border-black">INICIATIVA</span>
+                    </div>
+
+                    <!-- Defesa e Resistência Box -->
+                    <div class="flex-1 xl:flex-none border-4 border-black rounded-sm p-3 flex flex-col gap-2 xl:gap-6 w-full bg-blue-50/30">
+                        <div class="flex flex-col items-center">
+                            <span class="title-font text-2xl font-bold tracking-widest leading-none mb-1 xl:mb-2 text-blue-900">DEFESA</span>
+                            <div class="flex justify-between w-full px-2">
+                                <div class="flex flex-col items-center">
+                                    <span class="label-text text-[9px] text-blue-900" title="Calculado: 1 + Coord + Vont + Armadura + Escudo">FÍSICA</span>
+                                    <div class="w-12 h-12 hex-outer mt-1" title="Calculado"><div class="w-10 h-10 hex-inner text-xl font-bold bg-blue-100 text-blue-900 stat-val" id="out-def-fisica">0</div></div>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <span class="label-text text-[9px] text-blue-900" title="Calculado: 1 + Foco + Vontade">MENTAL</span>
+                                    <div class="w-12 h-12 hex-outer mt-1" title="Calculado"><div class="w-10 h-10 hex-inner text-xl font-bold bg-blue-100 text-blue-900 stat-val" id="out-def-mental">0</div></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="h-[2px] bg-black w-full my-1 xl:my-0"></div>
+
+                        <div class="flex flex-col items-center mt-1">
+                            <span class="title-font text-2xl font-bold tracking-widest leading-none mb-1 xl:mb-2 text-red-900">RESISTÊNCIA</span>
+                            <div class="flex justify-between w-full px-2">
+                                <div class="flex flex-col items-center">
+                                    <span class="label-text text-[9px] text-red-900" title="Calculado: 1 + Estamina">FÍSICA</span>
+                                    <div class="w-12 h-12 hex-outer mt-1" title="Calculado"><div class="w-10 h-10 hex-inner text-xl font-bold bg-red-100 text-red-900 stat-val" id="out-res-fisica">0</div></div>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <span class="label-text text-[9px] text-red-900" title="Calculado: 1 + Foco">MENTAL</span>
+                                    <div class="w-12 h-12 hex-outer mt-1" title="Calculado"><div class="w-10 h-10 hex-inner text-xl font-bold bg-red-100 text-red-900 stat-val" id="out-res-mental">0</div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Painel de Passivas (Grid 1x6 ou 2x3) -->
+                <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 grid-rows-none sm:grid-rows-3 gap-4 pt-4 lg:min-w-[300px] w-full">
+                    <div class="chamfer-box w-full">
+                        <div class="chamfer-inner relative pt-4 px-3 pb-2 flex flex-col h-full min-h-[60px]">
+                            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-2 font-bold label-text">Passiva</div>
+                            <div class="text-[11px] font-semibold text-center w-full flex-1 outline-none" contenteditable="true" id="passiva-1"></div>
+                        </div>
+                    </div>
+                    <div class="chamfer-box w-full">
+                        <div class="chamfer-inner relative pt-4 px-3 pb-2 flex flex-col h-full min-h-[60px]">
+                            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-2 font-bold label-text">Passiva</div>
+                            <div class="text-[11px] font-semibold text-center w-full flex-1 outline-none" contenteditable="true" id="passiva-2"></div>
+                        </div>
+                    </div>
+                    <div class="chamfer-box w-full">
+                        <div class="chamfer-inner relative pt-4 px-3 pb-2 flex flex-col h-full min-h-[60px]">
+                            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-2 font-bold label-text">Passiva</div>
+                            <div class="text-[11px] font-semibold text-center w-full flex-1 outline-none" contenteditable="true" id="passiva-3"></div>
+                        </div>
+                    </div>
+                    <div class="chamfer-box w-full">
+                        <div class="chamfer-inner relative pt-4 px-3 pb-2 flex flex-col h-full min-h-[60px]">
+                            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-2 font-bold label-text">Passiva</div>
+                            <div class="text-[11px] font-semibold text-center w-full flex-1 outline-none" contenteditable="true" id="passiva-4"></div>
+                        </div>
+                    </div>
+                    <div class="chamfer-box w-full">
+                        <div class="chamfer-inner relative pt-4 px-3 pb-2 flex flex-col h-full min-h-[60px]">
+                            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-2 font-bold label-text">Passiva</div>
+                            <div class="text-[11px] font-semibold text-center w-full flex-1 outline-none" contenteditable="true" id="passiva-5"></div>
+                        </div>
+                    </div>
+                    <div class="chamfer-box w-full">
+                        <div class="chamfer-inner relative pt-4 px-3 pb-2 flex flex-col h-full min-h-[60px]">
+                            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-2 font-bold label-text">Passiva</div>
+                            <div class="text-[11px] font-semibold text-center w-full flex-1 outline-none" contenteditable="true" id="passiva-6"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================== LINHA 3: BASE ================== -->
+        <div class="flex flex-col lg:flex-row items-center lg:items-stretch gap-6 mt-0 lg:mt-4 w-full">
+            
+            <!-- STRESS BOX -->
+            <div class="chamfer-box w-full lg:w-[350px] shrink-0">
+                <div class="chamfer-inner p-4 relative h-full flex flex-col justify-between">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-4 border-2 border-black title-font text-xl font-bold tracking-widest z-10 text-red-700">STRESS</div>
+                    
+                    <div class="flex flex-col gap-4 mt-2">
+                        <div class="flex flex-col sm:flex-row items-center gap-4">
+                            <div class="flex flex-col items-center w-full sm:w-28 shrink-0">
+                                <span class="label-text text-center leading-tight">EM BOAS CONDIÇÕES</span>
+                                <div class="w-12 h-12 hex-outer mt-1"><div class="w-10 h-10 hex-inner text-xl font-bold bg-gray-100 stat-val" id="out-stress-boas" title="Calculado automaticamente">0</div></div>
+                            </div>
+                            <div class="flex flex-wrap gap-1 items-center justify-center sm:justify-start w-full">
+                                <label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label>
+                                <label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label>
+                                <label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label>
+                                <label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label>
+                                <label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label>
+                                <label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label>
+                                <label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row items-center gap-4">
+                            <div class="flex flex-col items-center w-full sm:w-28 shrink-0">
+                                <span class="label-text text-center leading-tight text-orange-600">COM MACHUCADOS</span>
+                                <div class="w-10 h-10 hex-outer mt-1"><div class="w-8 h-8 hex-inner text-lg font-bold bg-gray-100 stat-val" id="out-stress-mach" title="Calculado automaticamente">0</div></div>
+                            </div>
+                            <div class="flex flex-wrap gap-1 items-center justify-center sm:justify-start w-full">
+                                <label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label>
+                                <label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label>
+                                <label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label>
+                                <label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label>
+                                <label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2">
+                            <span class="label-text w-full sm:w-28 shrink-0 text-center sm:text-right pr-2 text-red-600">COM FERIMENTOS</span>
+                            <div class="flex gap-1 flex-1 flex-wrap justify-center sm:justify-start"><label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label><label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label><label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label><label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label><label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label></div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2">
+                            <span class="label-text w-full sm:w-28 shrink-0 text-center sm:text-right pr-2 text-red-700">CAMBALEANTE</span>
+                            <div class="flex gap-1 flex-1 flex-wrap justify-center sm:justify-start"><label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label><label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label><label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label><label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label><label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label></div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2">
+                            <span class="label-text w-full sm:w-28 shrink-0 text-center sm:text-right pr-2 text-red-900">EM EXAUSTÃO</span>
+                            <div class="flex gap-1 items-center flex-1 flex-wrap justify-center sm:justify-start">
+                                <label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label><label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label><label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label><label class="stress-hex-border"><input type="checkbox" class="stress-hex"></label>
+                                <div class="ml-2 sm:ml-auto flex items-center gap-1"><span class="label-text font-black text-red-900 border-b-2 border-red-900">K.O.</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ARMADURA / ESCUDO com botões de limite livre -->
+            <div class="flex flex-row lg:flex-col items-center justify-center gap-6 relative w-full lg:w-28 shrink-0 py-4 lg:py-0 border-4 lg:border-0 border-black rounded lg:rounded-none bg-white lg:bg-transparent">
+                <div class="w-8 h-8 bg-black rotate-45 mb-2 hidden lg:block"></div>
+                
+                <div class="flex flex-col items-center relative z-10">
+                    <span class="label-text font-bold">ARMADURA</span>
+                    <div class="flex items-center gap-1 mt-1">
+                        <button onclick="changeVal('val-armadura', -1)" class="btn-math"><i class="fa-solid fa-minus text-xs"></i></button>
+                        <div class="w-16 h-16 hex-outer"><div class="w-[60px] h-[60px] hex-inner val-text text-3xl stat-val" id="val-armadura">0</div></div>
+                        <button onclick="changeVal('val-armadura', 1)" class="btn-math"><i class="fa-solid fa-plus text-xs"></i></button>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col items-center">
+                    <span class="label-text font-bold">ESCUDO</span>
+                    <div class="flex items-center gap-1 mt-1">
+                        <button onclick="changeVal('val-escudo', -1)" class="btn-math"><i class="fa-solid fa-minus text-xs"></i></button>
+                        <div class="w-16 h-16 hex-outer"><div class="w-[60px] h-[60px] hex-inner val-text text-3xl stat-val" id="val-escudo">0</div></div>
+                        <button onclick="changeVal('val-escudo', 1)" class="btn-math"><i class="fa-solid fa-plus text-xs"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INVENTÁRIO -->
+            <div class="chamfer-box w-full flex-1">
+                <div class="chamfer-inner relative pt-6 p-4 flex flex-col h-full">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-6 border-2 border-black title-font text-xl font-bold tracking-widest z-10">INVENTÁRIO</div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-6 h-full mt-2">
+                        
+                        <!-- Grid Visual e Interativo (Quadrados Perfeitos) -->
+                        <div class="w-[180px] h-[180px] shrink-0 border-2 border-black grid grid-cols-6 grid-rows-6 bg-white mx-auto sm:mx-0">
+                            <script>
+                                for(let i=0; i<36; i++) {
+                                    document.write(`<div class="inv-grid-cell border-r border-b border-dotted border-gray-400 relative" contenteditable="true" id="grid-cell-${i}" title="Clique para adicionar um item"></div>`);
+                                }
+                            </script>
+                        </div>
+
+                        <!-- Linhas Editáveis (Direita) -->
+                        <div class="flex-1 flex flex-col justify-between relative h-full min-h-[180px]">
+                            <ul class="space-y-3 text-sm font-semibold flex-1 mb-8">
+                                <li class="border-b-2 border-black w-full outline-none" contenteditable="true" id="inv-item-1"></li>
+                                <li class="border-b-2 border-black w-full outline-none" contenteditable="true" id="inv-item-2"></li>
+                                <li class="border-b-2 border-black w-full outline-none" contenteditable="true" id="inv-item-3"></li>
+                                <li class="border-b-2 border-black w-full outline-none" contenteditable="true" id="inv-item-4"></li>
+                                <li class="border-b-2 border-black w-full outline-none" contenteditable="true" id="inv-item-5"></li>
+                                <li class="border-b-2 border-black w-full outline-none" contenteditable="true" id="inv-item-6"></li>
+                                <li class="border-b-2 border-black w-full outline-none" contenteditable="true" id="inv-item-7"></li>
+                            </ul>
+                            
+                            <!-- Capacidade de Carga Box -->
+                            <div class="absolute bottom-0 right-0 border-2 border-black bg-white p-2 flex flex-col items-center">
+                                <span class="label-text">CAPACIDADE<br>DE CARGA</span>
+                                <span class="val-text outline-none text-2xl bg-gray-100 px-2 stat-val" id="out-carga" title="Calculado automaticamente: 3 * (5 + Corpo)">15</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE ROLAGEM DE DADOS -->
+<div id="dice-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center backdrop-blur-sm transition-opacity p-4">
+    <div class="w-full max-w-md chamfer-box p-[3px] shadow-2xl">
+        <div class="chamfer-inner bg-white flex flex-col items-center p-6 relative min-h-[250px] justify-center">
+            <button onclick="closeDiceModal()" class="absolute top-2 right-4 text-3xl font-black text-gray-400 hover:text-black">&times;</button>
+            
+            <div id="dice-result" class="w-full hidden flex flex-col items-center">
+                <!-- Injetado por JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // SISTEMA DE SALVAMENTO AUTOMÁTICO (LocalStorage)
+    const STORAGE_KEY = 'powerup_ficha_v6_regras_validacao';
+
+    // Regras de ligação entre atributos principais e seus sub-atributos
+    const attrGroups = {
+        alma: { main: 'val-alma', subs: ['val-arcana', 'val-sorte', 'val-vontade'] },
+        corpo: { main: 'val-corpo', subs: ['val-combate', 'val-coordenacao', 'val-estamina'] },
+        mente: { main: 'val-mente', subs: ['val-carisma', 'val-foco', 'val-intelecto'] }
+    };
+
+    function getSaveTargets() {
+        return [...document.querySelectorAll('[contenteditable="true"]'), ...document.querySelectorAll('.stat-val')];
+    }
+
+    function initSheet() {
+        loadData();
+        
+        // Salva textos editáveis livremente (Nomes, Inventário, etc)
+        document.querySelectorAll('[contenteditable="true"]').forEach((el, idx) => {
+            if (!el.id) el.id = 'edit-auto-' + idx;
+            el.addEventListener('input', saveData); // Estes não afetam matemática, então só salva
+        });
+
+        document.querySelectorAll('input[type="checkbox"]').forEach((el, idx) => {
+            if (!el.id) el.id = 'chk-auto-' + idx;
+            el.addEventListener('change', saveData);
+        });
+
+        document.getElementById('portrait-upload').addEventListener('change', handleImageUpload);
+
+        recalc(); // Força matemática inicial
+    }
+
+    function handleImageUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 200;
+                const scaleSize = MAX_WIDTH / img.width;
+                canvas.width = MAX_WIDTH;
+                canvas.height = img.height * scaleSize;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                
+                const imgEl = document.getElementById('portrait-img');
+                imgEl.src = dataUrl;
+                imgEl.classList.remove('hidden');
+                document.getElementById('portrait-text').classList.add('hidden');
+                
+                saveData();
+            }
+            img.src = event.target.result;
+        }
+        reader.readAsDataURL(file);
+    }
+
+    function saveData() {
+        const data = { texts: {}, checks: {}, image: null };
+        
+        getSaveTargets().forEach(el => {
+            if (el.id) data.texts[el.id] = el.innerText;
+        });
+
+        document.querySelectorAll('input[type="checkbox"]').forEach(el => data.checks[el.id] = el.checked);
+        
+        const imgEl = document.getElementById('portrait-img');
+        if(!imgEl.classList.contains('hidden') && imgEl.src) {
+            data.image = imgEl.src;
+        }
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function loadData() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return;
+        try {
+            const data = JSON.parse(saved);
+            
+            getSaveTargets().forEach((el) => {
+                if (el.id && data.texts[el.id] !== undefined) {
+                    el.innerText = data.texts[el.id];
+                }
+            });
+
+            document.querySelectorAll('input[type="checkbox"]').forEach((el) => {
+                if (el.id && data.checks[el.id] !== undefined) el.checked = data.checks[el.id];
+            });
+            
+            if(data.image) {
+                const imgEl = document.getElementById('portrait-img');
+                imgEl.src = data.image;
+                imgEl.classList.remove('hidden');
+                document.getElementById('portrait-text').classList.add('hidden');
+            }
+            
+        } catch (e) { console.error("Erro ao carregar ficheiro salvo.", e); }
+    }
+
+    // ==========================================
+    // SISTEMA DE VALIDAÇÃO E MATEMÁTICA
+    // ==========================================
+    
+    // Função acionada pelos botões + e -
+    function changeVal(id, delta) {
+        let el = document.getElementById(id);
+        if (!el) return;
+        let currentVal = parseInt(el.innerText);
+        if (isNaN(currentVal)) currentVal = 0;
+        
+        let newVal = currentVal + delta;
+        if (newVal < 0) newVal = 0; // O sistema proíbe valores negativos
+
+        // VALIDAÇÃO DAS REGRAS (Limites de Distribuição)
+        for (let key in attrGroups) {
+            let group = attrGroups[key];
+            
+            // Regra 1: Se estiver a aumentar um Sub-Atributo (ex: Sorte)
+            if (group.subs.includes(id)) {
+                let mainVal = getVal(group.main);
+                let currentSum = group.subs.reduce((sum, subId) => sum + getVal(subId), 0);
+                
+                // Se a nova soma for maior que o valor do atributo principal, BLOQUEIA
+                if (newVal > currentVal && (currentSum + delta > mainVal)) {
+                    piscarErro(group.main); // Pisca o Atributo Principal a vermelho para avisar o utilizador
+                    return; 
+                }
+            }
+            
+            // Regra 2: Se estiver a diminuir um Atributo Principal (ex: Alma)
+            if (group.main === id) {
+                let currentSum = group.subs.reduce((sum, subId) => sum + getVal(subId), 0);
+                
+                // Se tentar descer o limite para abaixo do que já gastou, BLOQUEIA
+                if (newVal < currentVal && newVal < currentSum) {
+                    piscarErro(id);
+                    return;
+                }
+            }
+        }
+
+        // Se passar nas regras, aplica e recalcula tudo
+        el.innerText = newVal;
+        recalc();
+        saveData();
+    }
+
+    function piscarErro(idElemento) {
+        let el = document.getElementById(idElemento);
+        if(el) {
+            // Acha o contorno preto (hex-attr-outer) em redor do texto para piscar
+            let caixaHex = el.closest('.hex-attr-outer');
+            if(caixaHex) {
+                caixaHex.classList.add('flash-error');
+                setTimeout(() => caixaHex.classList.remove('flash-error'), 300);
+            }
+        }
+    }
+
+    function getVal(id) { let val = parseInt(document.getElementById(id).innerText); return isNaN(val) ? 0 : val; }
+    
+    function setVal(id, val) { 
+        const el = document.getElementById(id); 
+        if(el && el.innerText != val) el.innerText = val; 
+    }
+
+    function recalc() {
+        let corpo = getVal('val-corpo'), coordenacao = getVal('val-coordenacao'), vontade = getVal('val-vontade');
+        let foco = getVal('val-foco'), estamina = getVal('val-estamina');
+        let armadura = getVal('val-armadura'), escudo = getVal('val-escudo');
+
+        setVal('out-iniciativa', corpo + coordenacao + vontade);
+        setVal('out-def-fisica', 1 + coordenacao + vontade + armadura + escudo);
+        setVal('out-def-mental', 1 + foco + vontade);
+        setVal('out-res-fisica', 1 + estamina);
+        setVal('out-res-mental', 1 + foco);
+        
+        let cargaBase = 3 * (5 + corpo); 
+        setVal('out-carga', cargaBase);
+        setVal('out-stress-boas', 5 + estamina + foco);
+        setVal('out-stress-mach', 3 + estamina + foco);
+    }
+
+    // ==========================================
+    // ROLAGEM DE DADOS ANIMADA
+    // ==========================================
+    let scrambleInterval = null;
+
+    function triggerRoll(btnElement) {
+        const spanElement = btnElement.querySelector('.stat-val');
+        if (!spanElement) return;
+        
+        let text = spanElement.innerText;
+        let numDice = 1;
+        let match = text.match(/(\d+)/);
+        if (match) numDice = parseInt(match[1]);
+
+        if(numDice <= 0 || isNaN(numDice)) return;
+
+        const modal = document.getElementById('dice-modal');
+        const resBox = document.getElementById('dice-result');
+
+        modal.classList.remove('hidden'); 
+        resBox.classList.remove('hidden');
+
+        // Pré-calcular a rolagem real
+        let rolls = [], successes = 0, ones = 0;
+        for(let i=0; i<numDice; i++) {
+            let r = Math.floor(Math.random() * 6) + 1;
+            rolls.push(r);
+            if (r >= 3) successes++;
+            if (r === 1) ones++;
+        }
+        rolls.sort((a,b) => a - b); 
+
+        // Cálculo de Combo
+        let uniqueRolls = [...new Set(rolls)], maxSeq = [], curSeq = [];
+        if (uniqueRolls.length > 0) {
+            curSeq = [uniqueRolls[0]]; maxSeq = [...curSeq];
+            for (let i = 1; i < uniqueRolls.length; i++) {
+                if (uniqueRolls[i] === uniqueRolls[i-1] + 1) curSeq.push(uniqueRolls[i]);
+                else { if (curSeq.length > maxSeq.length) maxSeq = [...curSeq]; curSeq = [uniqueRolls[i]]; }
+            }
+            if (curSeq.length > maxSeq.length) maxSeq = [...curSeq];
+        }
+
+        let comboLevel = maxSeq.length, comboPoints = 0;
+        if (comboLevel === 3) comboPoints = 5; else if (comboLevel === 4) comboPoints = 8;
+        else if (comboLevel === 5) comboPoints = 10; else if (comboLevel >= 6) comboPoints = 15;
+
+        // Construir Resumo Final
+        let summaryHtml = '';
+        if (comboLevel >= 3) {
+            let extras = 0, usedInCombo = new Set();
+            rolls.forEach(r => {
+                if (maxSeq.includes(r) && !usedInCombo.has(r)) usedInCombo.add(r);
+                else if (r >= 3) extras++; 
+            });
+            let totalFinal = Math.max(0, comboPoints + extras - ones);
+
+            summaryHtml += `
+            <div class="w-full bg-yellow-400 border-2 border-black p-3 rounded text-center my-2 shadow-[4px_4px_0_0_#000]">
+                <div class="font-black text-xl text-black">🔥 COMBO ATIVADO! 🔥</div>
+                <div class="text-sm font-bold text-gray-800">Sequência de ${comboLevel} Mvts. [${maxSeq.join(' - ')}]</div>
+            </div>
+            <div class="text-xs font-bold text-gray-800 text-center mt-2 px-4 leading-tight mb-2">
+                Cálculo: <span class="text-blue-700">${comboPoints} (Fixo)</span> + <span class="text-green-700">${extras} (Extras)</span> - <span class="text-red-600">${ones} (Erros)</span>
+            </div>
+            <div class="title-font text-5xl font-black bg-black text-white py-3 w-full text-center mt-1 rounded">TOTAL: ${totalFinal}</div>`;
+        } else {
+            let totalFinal = Math.max(0, successes - ones);
+            summaryHtml += `
+            <div class="flex justify-between w-full text-lg font-bold px-6 mb-1 text-gray-700">
+                <span>Sucessos (3, 4, 5, 6):</span> <span>${successes}</span>
+            </div>
+            <div class="flex justify-between w-full text-lg font-bold px-6 mb-4 text-red-600">
+                <span>Falhas (1):</span> <span>-${ones}</span>
+            </div>
+            <div class="title-font text-5xl font-black bg-black text-white py-3 w-full text-center mt-2 rounded">TOTAL: ${totalFinal}</div>`;
+        }
+
+        // Renderizar a Área de Dados Animada
+        let html = `<div class="title-font text-3xl font-bold mb-4 border-b-2 border-black w-full text-center pb-2">ROLAGEM: ${numDice}d6</div>`;
+        html += `<div class="flex flex-wrap gap-2 justify-center mb-4 w-full px-2">`;
+        
+        for(let i=0; i<numDice; i++) {
+            let stagger = i * 0.05; 
+            html += `<div id="die-${i}" class="w-12 h-12 flex items-center justify-center font-black text-2xl rounded-md border-b-4 bg-gray-200 text-gray-800 border-gray-400 shadow-sm opacity-0" style="animation: dice-drop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${stagger}s forwards;">?</div>`;
+        }
+        html += `</div>`;
+        html += `<div id="roll-summary" class="hidden w-full flex-col items-center opacity-0 transition-opacity duration-500">${summaryHtml}</div>`;
+
+        resBox.innerHTML = html;
+
+        // Iniciar animação frenética de números girando
+        if(scrambleInterval) clearInterval(scrambleInterval);
+        scrambleInterval = setInterval(() => {
+            for(let i=0; i<numDice; i++) {
+                let dieEl = document.getElementById(`die-${i}`);
+                if(dieEl) dieEl.innerText = Math.floor(Math.random() * 6) + 1;
+            }
+        }, 50);
+
+        // Parar a animação e mostrar os resultados após 1.2s
+        setTimeout(() => {
+            clearInterval(scrambleInterval);
+            
+            rolls.forEach((r, i) => {
+                let dieEl = document.getElementById(`die-${i}`);
+                if(!dieEl) return;
+                
+                dieEl.innerText = r;
+                
+                let isComboPart = (comboLevel >= 3) && maxSeq.includes(r);
+                let borderPulse = isComboPart ? 'ring-4 ring-yellow-400 animate-pulse' : '';
+                let bgStyle = 'bg-gray-200 text-gray-800 border-gray-400'; 
+                if (r === 1) bgStyle = 'bg-red-600 text-white border-red-800'; 
+                else if (r >= 3) bgStyle = 'bg-black text-white border-black'; 
+                if (isComboPart && r === 2) bgStyle = 'bg-blue-600 text-white border-blue-800';
+
+                dieEl.className = `w-12 h-12 flex items-center justify-center font-black text-2xl rounded-md border-b-4 shadow-sm transition-all duration-300 transform scale-110 ${bgStyle} ${borderPulse}`;
+                
+                setTimeout(() => dieEl.classList.remove('scale-110', 'transform'), 200);
+            });
+
+            let summaryEl = document.getElementById('roll-summary');
+            if(summaryEl) {
+                summaryEl.classList.remove('hidden');
+                summaryEl.classList.add('flex');
+                setTimeout(() => summaryEl.classList.remove('opacity-0'), 50); 
+            }
+        }, 1000 + (numDice * 50));
+    }
+
+    function closeDiceModal() { 
+        document.getElementById('dice-modal').classList.add('hidden'); 
+        if(scrambleInterval) clearInterval(scrambleInterval); 
+    }
+</script>
+
+</body>
+</html>
